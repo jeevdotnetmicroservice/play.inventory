@@ -3,7 +3,7 @@ Play Economy Play.Inventory microservice.
 
 ## Create and publish package
 ```powershell
-$version="1.0.5"
+$version="1.0.6"
 $packageversion="1.0.4"
 $owner="jeevdotnetmicroservice"
 $gh_pat="[PAT HERE]"

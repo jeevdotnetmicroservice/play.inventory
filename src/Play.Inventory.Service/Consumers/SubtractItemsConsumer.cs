@@ -1,6 +1,7 @@
 using System;
 using System.Threading.Tasks;
 using MassTransit;
+using Microsoft.Extensions.Logging;
 using Play.Common;
 using Play.Inventory.Contracts;
 using Play.Inventory.Service.Entities;
@@ -12,16 +13,25 @@ namespace Play.Inventory.Service.Consumers
     {
         private readonly IRepository<InventoryItem> inventoryItemsRepository;
         private readonly IRepository<CatalogItem> catalogItemsRepository;
+        private readonly ILogger<SubtractItemsConsumer> logger;
 
-        public SubtractItemsConsumer(IRepository<InventoryItem> inventoryItemsRepository, IRepository<CatalogItem> catalogItemsRepository)
+        public SubtractItemsConsumer(IRepository<InventoryItem> inventoryItemsRepository, IRepository<CatalogItem> catalogItemsRepository, ILogger<SubtractItemsConsumer> logger)
         {
             this.inventoryItemsRepository = inventoryItemsRepository;
             this.catalogItemsRepository = catalogItemsRepository;
+            this.logger = logger;
         }
 
         public async Task Consume(ConsumeContext<SubtractItems> context)
         {
             var message = context.Message;
+                        logger.LogInformation(
+                "Subtracting {Quantity} of catalog item {catalogItemId} from user {UserId} with CorrelationId {CorrelationId}...",
+                message.Quantity,
+                message.CatalogItemId,
+                message.UserId,
+                message.CorrelationId
+            );
 
             var item = await catalogItemsRepository.GetAsync(message.CatalogItemId);
 

@@ -53,7 +53,6 @@ namespace Play.Inventory.Service.Controllers
                     return Forbid();
                 }
             }
-
             var inventoryItemEntities = await inventoryItemsRepository.GetAllAsync(item => item.UserId == userId);
             var itemIds = inventoryItemEntities.Select(item => item.CatalogItemId);
             var catalogItemEntities = await catalogItemsRepository.GetAllAsync(item => itemIds.Contains(item.Id));

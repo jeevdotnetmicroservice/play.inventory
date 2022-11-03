@@ -9,7 +9,7 @@
             "type": "coreclr",
             "request": "launch",
             "preLaunchTask": "build",
-            "program": "${workspaceFolder}/src/Play.Inventory.Service/bin/Debug/net5.0/Play.Inventory.Service.dll",
+            "program": "${workspaceFolder}/src/Play.Inventory.Service/bin/Debug/net6.0/Play.Inventory.Service.dll",
             "args": [],
             "cwd": "${workspaceFolder}/src/Play.Inventory.Service",
             "stopAtEntry": false,

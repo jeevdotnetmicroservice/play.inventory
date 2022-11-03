@@ -1,8 +1,12 @@
 using System;
+using System.Collections.Generic;
+using System.Diagnostics.Metrics;
 using System.Threading.Tasks;
 using MassTransit;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Play.Common;
+using Play.Common.Settings;
 using Play.Inventory.Contracts;
 using Play.Inventory.Service.Entities;
 using Play.Inventory.Service.Exceptions;
@@ -14,12 +18,21 @@ namespace Play.Inventory.Service.Consumers
         private readonly IRepository<InventoryItem> inventoryItemsRepository;
         private readonly IRepository<CatalogItem> catalogItemsRepository;
         private readonly ILogger<GrantItemsConsumer> logger;
+        private readonly Counter<int> inventoryItemsGrantedCounter;
 
-        public GrantItemsConsumer(IRepository<InventoryItem> inventoryItemsRepository, IRepository<CatalogItem> catalogItemsRepository, ILogger<GrantItemsConsumer> logger)
+        public GrantItemsConsumer(
+            IRepository<InventoryItem> inventoryItemsRepository, 
+            IRepository<CatalogItem> catalogItemsRepository, 
+            ILogger<GrantItemsConsumer> logger,
+            IConfiguration configuration)
         {
             this.inventoryItemsRepository = inventoryItemsRepository;
             this.catalogItemsRepository = catalogItemsRepository;
             this.logger = logger;
+            var settings = configuration.GetSection(nameof(ServiceSettings))
+                                                .Get<ServiceSettings>();
+            Meter meter = new(settings.ServiceName);
+            inventoryItemsGrantedCounter = meter.CreateCounter<int>("inventoryItemsGranted");
         }
 
         public async Task Consume(ConsumeContext<GrantItems> context)
@@ -32,6 +45,7 @@ namespace Play.Inventory.Service.Consumers
                 message.UserId,
                 message.CorrelationId
             );
+
             var item = await catalogItemsRepository.GetAsync(message.CatalogItemId);
 
             if (item == null)
@@ -72,6 +86,10 @@ namespace Play.Inventory.Service.Consumers
                 inventoryItem.CatalogItemId,
                 inventoryItem.Quantity
             ));
+            inventoryItemsGrantedCounter.Add(1, new KeyValuePair<string, object>
+                (nameof(message.CatalogItemId), 
+                message.CatalogItemId));
+                
             await Task.WhenAll(itemsGrantedTask, inventoryUpdatedTask);
         }
     }

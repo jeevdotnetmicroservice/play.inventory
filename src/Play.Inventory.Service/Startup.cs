@@ -55,6 +55,7 @@ namespace Play.Inventory.Service
             });
             services.AddHealthChecks()
                 .AddMongoDb();
+                
             services.AddSeqLogging(Configuration)
                     .AddTracing(Configuration)
                     .AddMetrics(Configuration);
@@ -76,7 +77,7 @@ namespace Play.Inventory.Service
                         .AllowAnyMethod();
                 });
             }
-
+            app.UseOpenTelemetryPrometheusScrapingEndpoint();
             app.UseHttpsRedirection();
 
             app.UseRouting();
